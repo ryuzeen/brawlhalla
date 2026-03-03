@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawlhalla Legends | Meta & Classes</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        oswald: ['Oswald', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brawl: {
+                            black: '#000000',
+                            dark: '#0a0a0a',
+                            card: '#18181b',
+                            border: '#27272a',
+                            accent: '#ffffff'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            scroll-behavior: smooth;
+        }
+
+        .loader-wrapper { transition: opacity 0.5s ease, visibility 0.5s ease; }
+        .pulse-logo { animation: pulse-glow 2s infinite; }
+        @keyframes pulse-glow {
+            0% { filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0.4)); }
+            50% { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2)); }
+            100% { filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0)); }
+        }
+
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-bg {
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-bg::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        .hidden-section { display: none; }
+        
+        /* Table sort arrows */
+        .sort-arrow { display: inline-block; width: 12px; opacity: 0.3; transition: opacity 0.2s; }
+        .sort-arrow.active { opacity: 1; color: #fff; }
+    </style>
+</head>
+<body class="font-poppins antialiased overflow-x-hidden">
+
+    <!-- Loading Screen -->
+    <div id="loader" class="loader-wrapper fixed inset-0 z-50 bg-black flex flex-col items-center justify-center">
+        <img src="https://static.wikia.nocookie.net/brawlhalla_gamepedia/images/1/14/Brawlhalla_Logo_100M_Full.png/revision/latest/scale-to-width-down/1200?cb=20230520001004" 
+             alt="Brawlhalla Logo" 
+             class="w-64 md:w-80 pulse-logo mb-8 object-contain">
+        <h2 class="font-oswald text-xl font-semibold tracking-[0.3em] text-gray-500 uppercase">Carregando Dados</h2>
+        <div class="w-64 h-1 bg-zinc-900 mt-4 rounded overflow-hidden">
+            <div id="loading-bar" class="h-full bg-white w-0 transition-all duration-[1000ms] ease-out"></div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="opacity-0 transition-opacity duration-1000 flex flex-col min-h-screen">
+
+        <!-- Header -->
+        <header class="hero-bg py-12 flex flex-col items-center justify-center text-center px-4 relative border-b border-zinc-900">
+            <div class="z-10 flex flex-col items-center">
+                <img src="https://static.wikia.nocookie.net/brawlhalla_gamepedia/images/1/14/Brawlhalla_Logo_100M_Full.png/revision/latest/scale-to-width-down/1200?cb=20230520001004" 
+                     alt="Brawlhalla Logo" 
+                     class="w-40 md:w-56 mb-4 object-contain">
+                <h1 class="font-oswald text-3xl md:text-5xl font-bold uppercase tracking-tight text-white mb-2">
+                    Arena Hub
+                </h1>
+                <p class="text-zinc-400 text-sm max-w-xl mx-auto">
+                    Guia de classes, tier lists de duplas e estatísticas do meta atualizado.
+                </p>
+            </div>
+        </header>
+
+        <!-- Navegação -->
+        <nav class="bg-black border-b border-zinc-900 sticky top-0 z-50">
+            <div class="max-w-[1600px] mx-auto px-4 flex justify-center overflow-x-auto">
+                <div class="flex gap-1 md:gap-4 py-3" id="main-nav">
+                    <button onclick="switchTab('roster')" class="nav-btn active px-4 py-2 font-oswald uppercase tracking-widest text-sm font-semibold transition-colors bg-white text-black rounded-sm">Roster Completo</button>
+                    <button onclick="switchTab('meta2v2')" class="nav-btn px-4 py-2 font-oswald uppercase tracking-widest text-sm font-semibold transition-colors bg-transparent text-zinc-500 hover:text-white rounded-sm">Meta 2v2</button>
+                    <button onclick="switchTab('stats1v1')" class="nav-btn px-4 py-2 font-oswald uppercase tracking-widest text-sm font-semibold transition-colors bg-transparent text-zinc-500 hover:text-white rounded-sm">Estatísticas 1v1</button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="flex-grow">
+            <!-- SEÇÃO 1: ROSTER -->
+            <section id="roster" class="py-10 px-4 md:px-8 max-w-[1600px] mx-auto active-section">
+                <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8 bg-black/80 backdrop-blur-md p-4 rounded-xl border border-zinc-900" id="category-tabs"></div>
+                <div id="legends-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3 md:gap-4"></div>
+            </section>
+
+            <!-- SEÇÃO 2: META 2v2 -->
+            <section id="meta2v2" class="py-10 px-4 md:px-8 max-w-[1200px] mx-auto hidden-section fade-in">
+                <div class="text-center mb-10">
+                    <h2 class="font-oswald text-3xl md:text-4xl font-bold uppercase text-white mb-2">Top 10 Combinações 2v2</h2>
+                    <p class="text-zinc-400 text-sm">Baseado nas composições vencedoras e sinergia do meta competitivo.</p>
+                </div>
+                <div id="2v2-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Cards 2v2 gerados via JS -->
+                </div>
+            </section>
+
+            <!-- SEÇÃO 3: ESTATÍSTICAS 1v1 -->
+            <section id="stats1v1" class="py-10 px-4 md:px-8 max-w-[1400px] mx-auto hidden-section fade-in">
+                <div class="text-center mb-8">
+                    <h2 class="font-oswald text-3xl md:text-4xl font-bold uppercase text-white mb-2">Dados Globais (1v1)</h2>
+                    <p class="text-zinc-400 text-sm">Clique nos cabeçalhos para ordenar os dados por categoria.</p>
+                </div>
+                
+                <div class="overflow-x-auto pb-4">
+                    <div class="min-w-[1100px] bg-zinc-900/50 border border-zinc-800 rounded-lg overflow-hidden shadow-2xl">
+                        <!-- Cabeçalho Ordenável -->
+                        <div class="grid grid-cols-11 gap-2 p-4 border-b border-zinc-800 bg-black font-oswald tracking-wider uppercase text-zinc-400 text-xs md:text-sm font-semibold select-none">
+                            <div class="col-span-1 text-center cursor-pointer hover:text-white transition-colors flex items-center justify-center gap-1" onclick="handleSort('rank')"># <span id="arrow-rank" class="sort-arrow"></span></div>
+                            <div class="col-span-2 cursor-pointer hover:text-white transition-colors flex items-center gap-1" onclick="handleSort('nome')">Legend <span id="arrow-nome" class="sort-arrow"></span></div>
+                            <div class="col-span-1 text-center cursor-pointer hover:text-white transition-colors flex items-center justify-center gap-1" onclick="handleSort('wrRanked')">WR Ranked <span id="arrow-wrRanked" class="sort-arrow"></span></div>
+                            <div class="col-span-1 text-center cursor-pointer hover:text-white transition-colors flex items-center justify-center gap-1" onclick="handleSort('wrUnranked')">WR Unrank <span id="arrow-wrUnranked" class="sort-arrow"></span></div>
+                            <div class="col-span-1 text-center cursor-pointer hover:text-white transition-colors flex items-center justify-center gap-1" onclick="handleSort('playrate')">Playrate <span id="arrow-playrate" class="sort-arrow"></span></div>
+                            <div class="col-span-1 text-center cursor-pointer hover:text-white transition-colors flex items-center justify-center gap-1" onclick="handleSort('kills')">Kills <span id="arrow-kills" class="sort-arrow"></span></div>
+                            <div class="col-span-1 text-center cursor-pointer hover:text-white transition-colors flex items-center justify-center gap-1" onclick="handleSort('deaths')">Deaths <span id="arrow-deaths" class="sort-arrow"></span></div>
+                            <div class="col-span-1 text-center cursor-pointer hover:text-white transition-colors flex items-center justify-center gap-1" onclick="handleSort('suicides')">Suicides <span id="arrow-suicides" class="sort-arrow"></span></div>
+                            <div class="col-span-1 text-center cursor-pointer hover:text-white transition-colors flex items-center justify-center gap-1" onclick="handleSort('dmgDealt')">Dmg Dealt <span id="arrow-dmgDealt" class="sort-arrow"></span></div>
+                            <div class="col-span-1 text-center cursor-pointer hover:text-white transition-colors flex items-center justify-center gap-1" onclick="handleSort('dmgTaken')">Dmg Taken <span id="arrow-dmgTaken" class="sort-arrow"></span></div>
+                        </div>
+                        
+                        <!-- Lista Dinâmica -->
+                        <div id="1v1-list" class="flex flex-col bg-zinc-950/80">
+                            <!-- Linhas geradas via JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="bg-black py-8 text-center border-t border-zinc-900 mt-auto">
+            <p class="text-zinc-600 text-[10px] tracking-widest uppercase">
+                Fan Project &bull; Brawlhalla é uma marca da Ubisoft
+            </p>
+        </footer>
+    </div>
+
+    <!-- Lógica JavaScript -->
+    <script>
+        // 1. BANCO DE DADOS DAS LENDAS (68 Personagens)
+        const legendsData = [
+            { id: 1, nome: "Bödvar", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/bodvar.png" },
+            { id: 2, nome: "Cassidy", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/cassidy.png" },
+            { id: 3, nome: "Orion", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/orion.png" },
+            { id: 4, nome: "Lord Vraxx", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposevraxxm-1.png" },
+            { id: 5, nome: "Gnash", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/gnash.png" },
+            { id: 6, nome: "Queen Nai", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/nai.png" },
+            { id: 7, nome: "Hattori", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/hattori.png" },
+            { id: 8, nome: "Sir Roland", classe: "Suporte", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/roland.png" },
+            { id: 9, nome: "Scarlet", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/scarlet.png" },
+            { id: 10, nome: "Thatch", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/thatch.png" },
+            { id: 11, nome: "Ada", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/ada.png" },
+            { id: 12, nome: "Sentinel", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/sentinel.png" },
+            { id: 13, nome: "Lucien", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/lucien.png" },
+            { id: 14, nome: "Teros", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/teros.png" },
+            { id: 15, nome: "Brynn", classe: "Suporte", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposevalkyriem.png" },
+            { id: 16, nome: "Asuri", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposecatm.png" },
+            { id: 17, nome: "Barraza", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeapocm.png" },
+            { id: 18, nome: "Ember", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeelfm.png" },
+            { id: 19, nome: "Azoth", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeazothm.png" },
+            { id: 20, nome: "Koji", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposesamuraim.png" },
+            { id: 21, nome: "Ulgrim", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposedwarfm.png" },
+            { id: 22, nome: "Diana", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposemonsterhunterm.png" },
+            { id: 23, nome: "Jhala", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposebarbarianm.png" },
+            { id: 24, nome: "Kor", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposegolemm.png" },
+            { id: 25, nome: "Wu Shang", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposemonkm.png" },
+            { id: 26, nome: "Val", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposevalm.png" },
+            { id: 27, nome: "Ragnir", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposedragonm.png" },
+            { id: 28, nome: "Cross", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposecrossm.png" },
+            { id: 29, nome: "Mirage", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeassassinm.png" },
+            { id: 30, nome: "Nix", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposereaperm.png" },
+            { id: 31, nome: "Mordex", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposewerewolfm.png" },
+            { id: 32, nome: "Yumiko", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposekitsunem.png" },
+            { id: 33, nome: "Artemis", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposespacehunterm.png" },
+            { id: 34, nome: "Caspian", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposethiefm.png" },
+            { id: 35, nome: "Sidra", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposecorsairm.png" },
+            { id: 36, nome: "Xull", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposebrutem.png" },
+            { id: 37, nome: "Kaya", classe: "Suporte", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeinuitm-1.png" },
+            { id: 38, nome: "Isaiah", classe: "Suporte", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposesoldierm.png" },
+            { id: 39, nome: "Jiro", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeshinobim.png" },
+            { id: 40, nome: "Lin Fei", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposewuxiam.png" },
+            { id: 41, nome: "Zariel", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposecelestialm.png" },
+            { id: 42, nome: "Rayman", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeraymanm.png" },
+            { id: 43, nome: "Dusk", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeelfwarm.png" },
+            { id: 44, nome: "Fait", classe: "Suporte", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposespellwitchm.png" },
+            { id: 45, nome: "Thor", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposethorm.png" },
+            { id: 46, nome: "Petra", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeragefighterm.png" },
+            { id: 47, nome: "Vector", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeactualrobotm.png" },
+            { id: 48, nome: "Volkov", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposevamplordm.png" },
+            { id: 49, nome: "Onyx", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposegargoylem.png" },
+            { id: 50, nome: "Jaeyun", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposesellswordm.png" },
+            { id: 51, nome: "Mako", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeactualsharkm.png" },
+            { id: 52, nome: "Magyar", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeghostarmorm.png" },
+            { id: 53, nome: "Reno", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposebountyhunterm.png" },
+            { id: 54, nome: "Munin", classe: "Suporte", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposebirdbardm.png" },
+            { id: 55, nome: "Arcadia", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposefairyqueenm.png" },
+            { id: 56, nome: "Ezio", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeeziom.png" },
+            { id: 57, nome: "Tezca", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposeluchadorm.png" },
+            { id: 58, nome: "Thea", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposespeedsterm.png" },
+            { id: 59, nome: "Red Raptor", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposesentaim.png" },
+            { id: 60, nome: "Loki", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/lokiicon-1.png" },
+            { id: 61, nome: "Seven", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/roboengineer-rostericon.png" },
+            { id: 62, nome: "Vivi", classe: "Assassino", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposevivil.png" },
+            { id: 63, nome: "Imugi", classe: "Tanque", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/imgui-icon.png" },
+            { id: 64, nome: "Zuva", classe: "Dano", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposezuvam.png" },
+            { id: 65, nome: "Ransom", classe: "Controle", imagem: "https://tiermaker.com/images/media/template_images/2024/18992797/brawlhalla-all-legends--rupture-18992797/arosterposecybervirusm.png" },
+            { id: 66, nome: "Vera", classe: "Suporte", imagem: "https://cms.brawlhalla.com/c/uploads/2025/11/a_Roster_Pose_ClericM.png" },
+            { id: 67, nome: "Rupture", classe: "Tanque", imagem: "https://cms.brawlhalla.com/c/uploads/2026/01/a_Roster_Pose_DarkheartMonsterM.png" },
+            { id: 68, nome: "Priya", classe: "Dano", imagem: "https://cms.brawlhalla.com/c/uploads/2025/01/Mobile-icon.png" } // Priyar chobi update kora holo
+        ];
+
+        // 2. DADOS DO META 2v2 (Top 10)
+        const combos2v2 = [
+            { l1: "Bödvar", l2: "Teros", titulo: "O Clássico Indestrutível", desc: "Controle de espaço absurdo do Bödvar somado ao potencial de kill explosivo do machado do Teros." },
+            { l1: "Brynn", l2: "Asuri", titulo: "Rushdown & Edgeguard", desc: "Velocidade impressionante. Brynn domina o ar e Asuri pune com Katars no chão. Combos rápidos e mortais." },
+            { l1: "Val", l2: "Kaya", titulo: "Muralha de Defesa", desc: "As duas sobrevivem a quase tudo. A lança da Kaya controla o mapa, permitindo que a Val jogue agressiva nas bordas." },
+            { l1: "Tezca", l2: "Diana", titulo: "Pressão de Botas e Blasters", desc: "Tezca carrega o oponente pelo mapa enquanto Diana cobre as opções de fuga e finaliza com o Arco." },
+            { l1: "Rayman", l2: "Mordex", titulo: "Ofensiva Implacável", desc: "Sinergia altíssima no ar. As Gauntlets do Rayman preparam o terreno para os confirms de Foice do Mordex." },
+            { l1: "Koji", l2: "Orion", titulo: "Parede de Hitboxes", desc: "Orion entra cortando o palco com a Lança Foguete enquanto Koji cobre todas as punições com o Arco de forma cirúrgica." },
+            { l1: "Hattori", l2: "Wu Shang", titulo: "Tempestade de Lanças", desc: "Setup duplo de Lança garante controle absoluto de borda. Extremamente ágil e difícil de punir." },
+            { l1: "Ragnir", l2: "Sentinel", titulo: "Agro de Katars", desc: "Puro abafa. Ragnir entra com dano rápido de Katars e Sentinel finaliza facilmente com as assinaturas de Martelo." },
+            { l1: "Cassidy", l2: "Barraza", titulo: "Controle de Espaçamento", desc: "O setup de Blasters mais temido. Cassidy cobre perto/médio alcance e Barraza destrói quem tenta pular sobre elas." },
+            { l1: "Nix", l2: "Artemis", titulo: "Foice e Foguete", desc: "Artemis dita o ritmo do jogo com movimentação rápida, abrindo brechas para Nix aplicar sigs letais e edgeguards fundos." }
+        ];
+
+        // 3. DADOS DE ESTATÍSTICAS 1v1 COMPLETOS
+        const rawStats1v1 = [
+            { nome: "Ada", wrRanked: 55.66, wrUnranked: 57.40, playrate: 0.95, kills: 2.46, deaths: 2.10, suicides: 0.13, dmgDealt: 464.12, dmgTaken: 405.87 },
+            { nome: "Arcadia", wrRanked: 53.15, wrUnranked: 58.77, playrate: 0.75, kills: 2.47, deaths: 2.07, suicides: 0.10, dmgDealt: 502.15, dmgTaken: 400.28 },
+            { nome: "Artemis", wrRanked: 54.92, wrUnranked: 56.88, playrate: 1.04, kills: 2.36, deaths: 2.11, suicides: 0.19, dmgDealt: 436.70, dmgTaken: 394.53 },
+            { nome: "Asuri", wrRanked: 55.27, wrUnranked: 56.90, playrate: 0.98, kills: 2.37, deaths: 2.10, suicides: 0.17, dmgDealt: 432.45, dmgTaken: 397.78 },
+            { nome: "Azoth", wrRanked: 55.03, wrUnranked: 59.21, playrate: 0.92, kills: 2.45, deaths: 2.06, suicides: 0.14, dmgDealt: 475.09, dmgTaken: 395.58 },
+            { nome: "Barraza", wrRanked: 55.82, wrUnranked: 59.61, playrate: 0.89, kills: 2.50, deaths: 2.07, suicides: 0.16, dmgDealt: 464.70, dmgTaken: 396.73 },
+            { nome: "Brynn", wrRanked: 55.40, wrUnranked: 59.00, playrate: 0.98, kills: 2.47, deaths: 2.10, suicides: 0.12, dmgDealt: 477.77, dmgTaken: 410.71 },
+            { nome: "Bödvar", wrRanked: 54.62, wrUnranked: 56.54, playrate: 1.00, kills: 2.43, deaths: 2.16, suicides: 0.16, dmgDealt: 436.84, dmgTaken: 407.46 },
+            { nome: "Caspian", wrRanked: 55.67, wrUnranked: 57.49, playrate: 0.96, kills: 2.42, deaths: 2.10, suicides: 0.18, dmgDealt: 450.85, dmgTaken: 396.81 },
+            { nome: "Cassidy", wrRanked: 54.77, wrUnranked: 56.91, playrate: 0.88, kills: 2.45, deaths: 2.14, suicides: 0.14, dmgDealt: 457.68, dmgTaken: 403.93 },
+            { nome: "Cross", wrRanked: 54.09, wrUnranked: 56.90, playrate: 0.92, kills: 2.41, deaths: 2.12, suicides: 0.17, dmgDealt: 445.53, dmgTaken: 404.44 },
+            { nome: "Diana", wrRanked: 54.85, wrUnranked: 56.60, playrate: 0.84, kills: 2.38, deaths: 2.12, suicides: 0.15, dmgDealt: 450.73, dmgTaken: 404.37 },
+            { nome: "Dusk", wrRanked: 55.63, wrUnranked: 56.53, playrate: 0.94, kills: 2.34, deaths: 2.10, suicides: 0.13, dmgDealt: 472.39, dmgTaken: 407.32 },
+            { nome: "Ember", wrRanked: 56.42, wrUnranked: 56.46, playrate: 0.98, kills: 2.37, deaths: 2.10, suicides: 0.16, dmgDealt: 459.22, dmgTaken: 398.35 },
+            { nome: "Ezio", wrRanked: 51.68, wrUnranked: 57.07, playrate: 0.65, kills: 2.41, deaths: 2.11, suicides: 0.14, dmgDealt: 463.08, dmgTaken: 402.72 },
+            { nome: "Fait", wrRanked: 52.82, wrUnranked: 55.44, playrate: 1.03, kills: 2.27, deaths: 2.13, suicides: 0.20, dmgDealt: 450.80, dmgTaken: 399.10 },
+            { nome: "Gnash", wrRanked: 55.69, wrUnranked: 59.27, playrate: 0.95, kills: 2.53, deaths: 2.09, suicides: 0.14, dmgDealt: 464.39, dmgTaken: 403.96 },
+            { nome: "Hattori", wrRanked: 53.19, wrUnranked: 55.40, playrate: 1.08, kills: 2.27, deaths: 2.15, suicides: 0.14, dmgDealt: 457.60, dmgTaken: 417.98 },
+            { nome: "Imugi", wrRanked: 56.39, wrUnranked: 62.09, playrate: 0.50, kills: 2.65, deaths: 2.04, suicides: 0.11, dmgDealt: 516.47, dmgTaken: 393.35 },
+            { nome: "Isaiah", wrRanked: 56.63, wrUnranked: 57.79, playrate: 0.83, kills: 2.38, deaths: 2.07, suicides: 0.16, dmgDealt: 462.63, dmgTaken: 399.21 },
+            { nome: "Jaeyun", wrRanked: 53.82, wrUnranked: 57.25, playrate: 0.98, kills: 2.42, deaths: 2.12, suicides: 0.13, dmgDealt: 477.79, dmgTaken: 411.49 },
+            { nome: "Jhala", wrRanked: 52.86, wrUnranked: 57.86, playrate: 0.94, kills: 2.49, deaths: 2.11, suicides: 0.13, dmgDealt: 454.83, dmgTaken: 401.23 },
+            { nome: "Jiro", wrRanked: 51.21, wrUnranked: 53.74, playrate: 1.04, kills: 2.26, deaths: 2.16, suicides: 0.20, dmgDealt: 427.41, dmgTaken: 398.93 },
+            { nome: "Kaya", wrRanked: 53.16, wrUnranked: 56.31, playrate: 0.93, kills: 2.29, deaths: 2.12, suicides: 0.15, dmgDealt: 475.21, dmgTaken: 411.51 },
+            { nome: "Zuva", wrRanked: 53.25, wrUnranked: 58.19, playrate: 0.43, kills: 2.53, deaths: 2.12, suicides: 0.16, dmgDealt: 449.86, dmgTaken: 390.03 }, // Tratado "King Zuva"
+            { nome: "Koji", wrRanked: 51.40, wrUnranked: 54.60, playrate: 0.95, kills: 2.26, deaths: 2.16, suicides: 0.14, dmgDealt: 451.59, dmgTaken: 411.44 },
+            { nome: "Kor", wrRanked: 54.95, wrUnranked: 57.67, playrate: 1.00, kills: 2.47, deaths: 2.12, suicides: 0.18, dmgDealt: 436.69, dmgTaken: 396.34 },
+            { nome: "Vera", wrRanked: 48.97, wrUnranked: 57.31, playrate: 0.23, kills: 2.45, deaths: 2.12, suicides: 0.16, dmgDealt: 462.06, dmgTaken: 401.62 }, // Tratado "Lady Vera"
+            { nome: "Lin Fei", wrRanked: 51.57, wrUnranked: 55.29, playrate: 0.88, kills: 2.31, deaths: 2.13, suicides: 0.19, dmgDealt: 452.24, dmgTaken: 398.91 },
+            { nome: "Loki", wrRanked: 51.67, wrUnranked: 56.11, playrate: 0.62, kills: 2.36, deaths: 2.14, suicides: 0.20, dmgDealt: 457.71, dmgTaken: 390.69 },
+            { nome: "Lord Vraxx", wrRanked: 55.13, wrUnranked: 58.12, playrate: 0.84, kills: 2.43, deaths: 2.06, suicides: 0.14, dmgDealt: 457.59, dmgTaken: 393.48 },
+            { nome: "Lucien", wrRanked: 52.53, wrUnranked: 56.99, playrate: 0.90, kills: 2.22, deaths: 2.04, suicides: 0.18, dmgDealt: 443.15, dmgTaken: 397.43 },
+            { nome: "Magyar", wrRanked: 55.33, wrUnranked: 58.45, playrate: 0.88, kills: 2.44, deaths: 2.11, suicides: 0.15, dmgDealt: 467.32, dmgTaken: 400.27 },
+            { nome: "Mako", wrRanked: 53.12, wrUnranked: 56.31, playrate: 0.89, kills: 2.40, deaths: 2.10, suicides: 0.17, dmgDealt: 473.01, dmgTaken: 394.77 },
+            { nome: "Mirage", wrRanked: 52.65, wrUnranked: 55.01, playrate: 1.13, kills: 2.30, deaths: 2.17, suicides: 0.19, dmgDealt: 457.69, dmgTaken: 403.87 },
+            { nome: "Mordex", wrRanked: 52.47, wrUnranked: 55.14, playrate: 1.15, kills: 2.32, deaths: 2.18, suicides: 0.23, dmgDealt: 434.78, dmgTaken: 399.82 },
+            { nome: "Munin", wrRanked: 51.51, wrUnranked: 56.83, playrate: 0.75, kills: 2.35, deaths: 2.12, suicides: 0.19, dmgDealt: 455.41, dmgTaken: 391.35 },
+            { nome: "Nix", wrRanked: 53.50, wrUnranked: 55.64, playrate: 1.02, kills: 2.32, deaths: 2.15, suicides: 0.21, dmgDealt: 436.94, dmgTaken: 399.70 },
+            { nome: "Onyx", wrRanked: 56.52, wrUnranked: 58.73, playrate: 0.92, kills: 2.41, deaths: 2.08, suicides: 0.19, dmgDealt: 457.14, dmgTaken: 394.88 },
+            { nome: "Orion", wrRanked: 56.55, wrUnranked: 59.18, playrate: 0.99, kills: 2.47, deaths: 2.07, suicides: 0.15, dmgDealt: 480.71, dmgTaken: 398.49 },
+            { nome: "Petra", wrRanked: 54.27, wrUnranked: 56.23, playrate: 0.99, kills: 2.32, deaths: 2.10, suicides: 0.16, dmgDealt: 452.20, dmgTaken: 401.05 },
+            { nome: "Priya", wrRanked: 50.14, wrUnranked: 55.98, playrate: 0.43, kills: 2.41, deaths: 2.15, suicides: 0.13, dmgDealt: 483.98, dmgTaken: 414.47 },
+            { nome: "Queen Nai", wrRanked: 56.60, wrUnranked: 59.77, playrate: 1.00, kills: 2.54, deaths: 2.05, suicides: 0.15, dmgDealt: 491.47, dmgTaken: 394.65 },
+            { nome: "Ragnir", wrRanked: 55.88, wrUnranked: 58.71, playrate: 0.97, kills: 2.44, deaths: 2.07, suicides: 0.16, dmgDealt: 452.84, dmgTaken: 396.82 },
+            { nome: "Ransom", wrRanked: 53.13, wrUnranked: 58.96, playrate: 0.30, kills: 2.60, deaths: 2.11, suicides: 0.13, dmgDealt: 493.18, dmgTaken: 402.10 },
+            { nome: "Rayman", wrRanked: 55.68, wrUnranked: 58.13, playrate: 0.94, kills: 2.45, deaths: 2.09, suicides: 0.16, dmgDealt: 449.97, dmgTaken: 399.25 },
+            { nome: "Red Raptor", wrRanked: 51.84, wrUnranked: 56.59, playrate: 0.63, kills: 2.46, deaths: 2.11, suicides: 0.15, dmgDealt: 447.94, dmgTaken: 394.09 },
+            { nome: "Reno", wrRanked: 52.89, wrUnranked: 57.96, playrate: 0.72, kills: 2.35, deaths: 2.06, suicides: 0.14, dmgDealt: 476.68, dmgTaken: 401.16 },
+            { nome: "Rupture", wrRanked: 57.57, wrUnranked: 64.30, playrate: 0.19, kills: 2.79, deaths: 2.02, suicides: 0.13, dmgDealt: 485.12, dmgTaken: 380.14 },
+            { nome: "Scarlet", wrRanked: 56.84, wrUnranked: 59.60, playrate: 0.93, kills: 2.57, deaths: 2.10, suicides: 0.15, dmgDealt: 456.62, dmgTaken: 393.28 },
+            { nome: "Sentinel", wrRanked: 56.12, wrUnranked: 59.04, playrate: 0.94, kills: 2.47, deaths: 2.07, suicides: 0.17, dmgDealt: 453.02, dmgTaken: 398.32 },
+            { nome: "Seven", wrRanked: 57.41, wrUnranked: 61.59, playrate: 0.53, kills: 2.54, deaths: 2.03, suicides: 0.15, dmgDealt: 502.29, dmgTaken: 391.26 },
+            { nome: "Sidra", wrRanked: 57.90, wrUnranked: 58.59, playrate: 0.94, kills: 2.40, deaths: 2.07, suicides: 0.17, dmgDealt: 454.30, dmgTaken: 394.66 },
+            { nome: "Sir Roland", wrRanked: 56.61, wrUnranked: 59.76, playrate: 0.96, kills: 2.45, deaths: 2.03, suicides: 0.15, dmgDealt: 460.62, dmgTaken: 391.64 },
+            { nome: "Teros", wrRanked: 56.20, wrUnranked: 59.88, playrate: 0.94, kills: 2.66, deaths: 2.11, suicides: 0.15, dmgDealt: 444.77, dmgTaken: 396.32 },
+            { nome: "Tezca", wrRanked: 54.76, wrUnranked: 56.50, playrate: 0.70, kills: 2.42, deaths: 2.14, suicides: 0.18, dmgDealt: 425.62, dmgTaken: 389.17 },
+            { nome: "Thatch", wrRanked: 54.61, wrUnranked: 56.96, playrate: 0.88, kills: 2.46, deaths: 2.11, suicides: 0.14, dmgDealt: 455.89, dmgTaken: 403.83 },
+            { nome: "Thea", wrRanked: 53.25, wrUnranked: 56.46, playrate: 0.63, kills: 2.30, deaths: 2.08, suicides: 0.17, dmgDealt: 436.10, dmgTaken: 386.74 },
+            { nome: "Thor", wrRanked: 55.87, wrUnranked: 58.54, playrate: 0.91, kills: 2.41, deaths: 2.07, suicides: 0.15, dmgDealt: 455.22, dmgTaken: 398.80 },
+            { nome: "Ulgrim", wrRanked: 58.05, wrUnranked: 60.52, playrate: 0.90, kills: 2.54, deaths: 2.06, suicides: 0.15, dmgDealt: 467.12, dmgTaken: 396.26 },
+            { nome: "Val", wrRanked: 53.72, wrUnranked: 56.22, playrate: 1.03, kills: 2.38, deaths: 2.15, suicides: 0.17, dmgDealt: 432.83, dmgTaken: 408.39 },
+            { nome: "Vector", wrRanked: 55.91, wrUnranked: 59.80, playrate: 0.75, kills: 2.49, deaths: 2.01, suicides: 0.17, dmgDealt: 463.18, dmgTaken: 381.82 },
+            { nome: "Vivi", wrRanked: 54.56, wrUnranked: 57.77, playrate: 0.46, kills: 2.45, deaths: 2.11, suicides: 0.16, dmgDealt: 458.10, dmgTaken: 396.44 },
+            { nome: "Volkov", wrRanked: 52.40, wrUnranked: 56.65, playrate: 0.95, kills: 2.30, deaths: 2.09, suicides: 0.19, dmgDealt: 433.91, dmgTaken: 387.97 },
+            { nome: "Wu Shang", wrRanked: 53.50, wrUnranked: 56.45, playrate: 1.04, kills: 2.40, deaths: 2.14, suicides: 0.15, dmgDealt: 449.49, dmgTaken: 407.99 },
+            { nome: "Xull", wrRanked: 56.54, wrUnranked: 58.38, playrate: 0.97, kills: 2.50, deaths: 2.11, suicides: 0.15, dmgDealt: 485.80, dmgTaken: 399.64 },
+            { nome: "Yumiko", wrRanked: 54.23, wrUnranked: 55.82, playrate: 0.91, kills: 2.37, deaths: 2.15, suicides: 0.16, dmgDealt: 449.91, dmgTaken: 403.22 },
+            { nome: "Zariel", wrRanked: 54.86, wrUnranked: 58.21, playrate: 0.88, kills: 2.44, deaths: 2.07, suicides: 0.17, dmgDealt: 455.07, dmgTaken: 390.82 }
+        ];
+
+        const classes = ["Todos", "Dano", "Controle", "Suporte", "Assassino", "Tanque"];
+        let classeAtual = "Todos";
+
+        // Cores com classes utilitárias para preenchimento e borda inferior
+        const classColors = {
+            "Dano": { bg: "bg-red-600", text: "text-red-500", borderHover: "hover:border-red-500", border: "border-red-500", glow: "rgba(239,68,68,0.2)" },
+            "Controle": { bg: "bg-blue-600", text: "text-blue-500", borderHover: "hover:border-blue-500", border: "border-blue-500", glow: "rgba(59,130,246,0.2)" },
+            "Suporte": { bg: "bg-emerald-600", text: "text-emerald-500", borderHover: "hover:border-emerald-500", border: "border-emerald-500", glow: "rgba(16,185,129,0.2)" },
+            "Assassino": { bg: "bg-purple-600", text: "text-purple-500", borderHover: "hover:border-purple-500", border: "border-purple-500", glow: "rgba(168,85,247,0.2)" },
+            "Tanque": { bg: "bg-amber-600", text: "text-amber-500", borderHover: "hover:border-amber-500", border: "border-amber-500", glow: "rgba(245,158,11,0.2)" },
+            "Todos": { bg: "bg-white", text: "text-white", borderHover: "hover:border-zinc-400", border: "border-zinc-500", glow: "rgba(255,255,255,0)" }
+        };
+
+        // Estado do Sort da Tabela 1v1
+        let currentSort = { col: 'nome', asc: true };
+
+        // ==========================================
+        // INIT
+        // ==========================================
+        window.addEventListener('load', () => {
+            const barra = document.getElementById('loading-bar');
+            barra.style.width = '100%';
+
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                const mainContent = document.getElementById('main-content');
+                
+                loader.style.opacity = '0';
+                loader.style.visibility = 'hidden';
+                
+                setTimeout(() => {
+                    loader.remove();
+                    mainContent.classList.remove('opacity-0');
+                    renderRosterInterface();
+                    render2v2Interface();
+                    render1v1Interface();
+                }, 500);
+            }, 1000); 
+        });
+
+        // ==========================================
+        // SISTEMA DE ABAS PRINCIPAIS
+        // ==========================================
+        function switchTab(tabId) {
+            document.getElementById('roster').classList.add('hidden-section');
+            document.getElementById('meta2v2').classList.add('hidden-section');
+            document.getElementById('stats1v1').classList.add('hidden-section');
+            
+            const btns = document.querySelectorAll('.nav-btn');
+            btns.forEach(b => {
+                b.classList.remove('bg-white', 'text-black');
+                b.classList.add('bg-transparent', 'text-zinc-500');
+            });
+
+            document.getElementById(tabId).classList.remove('hidden-section');
+            
+            const clickedBtn = Array.from(btns).find(b => b.getAttribute('onclick').includes(tabId));
+            if(clickedBtn) {
+                clickedBtn.classList.remove('bg-transparent', 'text-zinc-500');
+                clickedBtn.classList.add('bg-white', 'text-black');
+            }
+        }
+
+        function getLegendImg(nome) {
+            const legend = legendsData.find(l => l.nome === nome);
+            return legend && legend.imagem ? legend.imagem : 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22%3E%3Crect width=%221%22 height=%221%22 fill=%22%2318181b%22/%3E%3C/svg%3E';
+        }
+
+        // ==========================================
+        // RENDER 1: ROSTER
+        // ==========================================
+        function renderRosterInterface() {
+            const tabsContainer = document.getElementById('category-tabs');
+            tabsContainer.innerHTML = '';
+
+            classes.forEach(cls => {
+                const btn = document.createElement('button');
+                const isAtivo = cls === classeAtual;
+                const color = classColors[cls];
+                
+                btn.className = `px-4 py-1.5 md:px-6 md:py-2 text-xs md:text-sm uppercase tracking-wider font-oswald font-semibold transition-all duration-300 rounded-sm ${
+                    isAtivo ? `${color.bg} ${cls === 'Todos' ? 'text-black' : 'text-white'} shadow-lg` : `bg-transparent text-zinc-500 hover:${color.text} hover:bg-zinc-800`
+                }`;
+                btn.textContent = cls;
+                
+                btn.onclick = () => {
+                    classeAtual = cls;
+                    renderRosterInterface();
+                };
+                tabsContainer.appendChild(btn);
+            });
+
+            const grid = document.getElementById('legends-grid');
+            grid.innerHTML = '';
+
+            const lendasFiltradas = classeAtual === "Todos" ? legendsData : legendsData.filter(l => l.classe === classeAtual);
+
+            lendasFiltradas.forEach((lenda) => {
+                const color = classColors[lenda.classe];
+                const card = document.createElement('div');
+                card.className = `relative group aspect-square rounded-sm overflow-hidden bg-zinc-900 border border-zinc-800 ${color.borderHover} fade-in cursor-pointer transition-colors`;
+                card.innerHTML = `
+                    <img src="${getLegendImg(lenda.nome)}" alt="${lenda.nome}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 bg-zinc-950 p-2">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 md:p-4 text-center">
+                        <h3 class="font-oswald text-lg md:text-xl font-bold uppercase tracking-wide transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">${lenda.nome}</h3>
+                        <span class="text-[10px] md:text-xs ${color.text} font-bold uppercase tracking-widest mt-1">${lenda.classe}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // RENDER 2: META 2v2 (Atualizado: Sem '&' e com cores)
+        // ==========================================
+        function render2v2Interface() {
+            const grid = document.getElementById('2v2-grid');
+            grid.innerHTML = '';
+
+            combos2v2.forEach((combo, index) => {
+                const img1 = getLegendImg(combo.l1);
+                const img2 = getLegendImg(combo.l2);
+
+                const c1 = legendsData.find(l => l.nome === combo.l1)?.classe || "Todos";
+                const c2 = legendsData.find(l => l.nome === combo.l2)?.classe || "Todos";
+
+                const color1 = classColors[c1];
+                const color2 = classColors[c2];
+
+                const card = document.createElement('div');
+                card.className = "flex flex-col bg-zinc-900/50 border border-zinc-800 rounded-sm overflow-hidden hover:border-zinc-500 transition-colors fade-in";
+                
+                // Aplicamos as cores da classe nas bordas inferiores (border-b-4) e luz de fundo
+                card.innerHTML = `
+                    <div class="h-36 flex relative bg-zinc-950">
+                        <div class="w-1/2 h-full flex flex-col relative" style="background: radial-gradient(circle at center, ${color1.glow} 0%, transparent 70%);">
+                            <img src="${img1}" class="w-full h-full object-contain p-2" alt="${combo.l1}">
+                            <div class="h-1 w-full ${color1.bg} absolute bottom-0"></div>
+                        </div>
+                        
+                        <!-- Divisor Angular Vazio (Sem o '&') -->
+                        <div class="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 bg-zinc-900 border-x border-zinc-800 transform skew-x-[-15deg] z-10"></div>
+                        
+                        <div class="w-1/2 h-full flex flex-col relative" style="background: radial-gradient(circle at center, ${color2.glow} 0%, transparent 70%);">
+                            <img src="${img2}" class="w-full h-full object-contain p-2" alt="${combo.l2}">
+                            <div class="h-1 w-full ${color2.bg} absolute bottom-0"></div>
+                        </div>
+                    </div>
+                    <div class="p-4 md:p-6 flex-grow flex flex-col justify-center bg-zinc-900">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-oswald text-xl font-bold text-white tracking-wide">${combo.l1} + ${combo.l2}</span>
+                            <span class="text-xs bg-zinc-800 px-2 py-1 rounded text-zinc-400 font-bold uppercase">#${index + 1}</span>
+                        </div>
+                        <h4 class="text-sm font-semibold text-zinc-300 mb-1">${combo.titulo}</h4>
+                        <p class="text-xs text-zinc-500 leading-relaxed">${combo.desc}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // RENDER 3: ESTATÍSTICAS 1v1 (Tabela Completa e Ordenável)
+        // ==========================================
+        function handleSort(column) {
+            if (currentSort.col === column) {
+                currentSort.asc = !currentSort.asc;
+            } else {
+                currentSort.col = column;
+                // Por padrão, nomes e rank ordem crescente (A-Z, 1-9). Atributos numéricos em ordem decrescente (Maior pro menor)
+                if (column === 'nome' || column === 'rank') {
+                    currentSort.asc = true;
+                } else {
+                    currentSort.asc = false;
+                }
+            }
+            render1v1Interface();
+        }
+
+        function render1v1Interface() {
+            const list = document.getElementById('1v1-list');
+            list.innerHTML = '';
+
+            // Update Header Arrows
+            const columns = ['rank', 'nome', 'wrRanked', 'wrUnranked', 'playrate', 'kills', 'deaths', 'suicides', 'dmgDealt', 'dmgTaken'];
+            columns.forEach(col => {
+                const el = document.getElementById(`arrow-${col}`);
+                if(el) {
+                    if(col === currentSort.col) {
+                        el.innerHTML = currentSort.asc ? '▲' : '▼';
+                        el.classList.add('active');
+                    } else {
+                        el.innerHTML = '▲';
+                        el.classList.remove('active');
+                    }
+                }
+            });
+
+            // Sort data
+            let sortedStats = [...rawStats1v1];
+            
+            // Add original index for 'rank' logic before sorting
+            sortedStats.forEach((s, i) => s.rank = i + 1);
+
+            sortedStats.sort((a, b) => {
+                let valA = a[currentSort.col];
+                let valB = b[currentSort.col];
+                
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                
+                if (valA < valB) return currentSort.asc ? -1 : 1;
+                if (valA > valB) return currentSort.asc ? 1 : -1;
+                return 0;
+            });
+
+            sortedStats.forEach((stat, idx) => {
+                const img = getLegendImg(stat.nome);
+                
+                // Colorindo Winrates (>= 50% verde, < 50% vermelho)
+                const wrRnkColor = stat.wrRanked >= 50 ? 'text-emerald-400' : 'text-red-400';
+                const wrUnrkColor = stat.wrUnranked >= 50 ? 'text-emerald-400' : 'text-red-400';
+
+                const row = document.createElement('div');
+                row.className = "grid grid-cols-11 gap-2 items-center p-3 border-b border-zinc-800/50 hover:bg-zinc-800 transition-colors fade-in";
+                
+                row.innerHTML = `
+                    <div class="col-span-1 text-center font-oswald text-lg font-bold text-zinc-500">
+                        ${stat.rank}
+                    </div>
+                    
+                    <div class="col-span-2 flex items-center gap-3 pl-2">
+                        <div class="w-10 h-10 bg-black border border-zinc-700 rounded overflow-hidden shrink-0">
+                            <img src="${img}" class="w-full h-full object-cover scale-110" alt="${stat.nome}">
+                        </div>
+                        <span class="font-oswald text-base font-bold uppercase tracking-wide text-white">${stat.nome}</span>
+                    </div>
+
+                    <div class="col-span-1 text-center font-semibold text-sm ${wrRnkColor}">${stat.wrRanked.toFixed(2)}%</div>
+                    <div class="col-span-1 text-center font-semibold text-sm ${wrUnrkColor}">${stat.wrUnranked.toFixed(2)}%</div>
+                    <div class="col-span-1 text-center font-semibold text-sm text-blue-400">${stat.playrate.toFixed(2)}%</div>
+                    <div class="col-span-1 text-center text-sm text-zinc-300">${stat.kills.toFixed(2)}</div>
+                    <div class="col-span-1 text-center text-sm text-zinc-300">${stat.deaths.toFixed(2)}</div>
+                    <div class="col-span-1 text-center text-sm text-zinc-400">${stat.suicides.toFixed(2)}</div>
+                    <div class="col-span-1 text-center text-sm text-amber-400">${stat.dmgDealt.toFixed(2)}</div>
+                    <div class="col-span-1 text-center text-sm text-orange-400">${stat.dmgTaken.toFixed(2)}</div>
+                `;
+                list.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
