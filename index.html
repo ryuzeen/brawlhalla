@@ -125,7 +125,7 @@
             <!-- SEÇÃO 1: ROSTER -->
             <section id="roster" class="py-10 px-4 md:px-8 max-w-[1600px] mx-auto active-section">
                 <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-8 bg-black/80 backdrop-blur-md p-4 rounded-xl border border-zinc-900" id="category-tabs"></div>
-                <div id="legends-grid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 gap-2 md:gap-3"></div>
+                <div id="legends-grid" class="flex flex-wrap justify-center gap-2 md:gap-3"></div>
             </section>
 
             <!-- SEÇÃO 2: META 2v2 -->
@@ -171,13 +171,14 @@
             </section>
         </main>
 
-        <footer class="bg-black py-8 text-center border-t border-zinc-900 mt-auto">
-            <img src="https://preview.redd.it/so-last-year-i-had-made-a-brawlhalla-collage-now-i-wanted-v0-gkdchrpyfxlb1.png?width=640&crop=smart&auto=webp&s=b6ae18a91202765264f59b5f80e625f67e9905c6" 
-                 alt="Brawlhalla" 
-                 class="w-24 mx-auto mb-4 opacity-30 grayscale rounded-lg">
-            <p class="text-zinc-600 text-[10px] tracking-widest uppercase">
+        <footer class="bg-black py-6 border-t border-zinc-900 mt-auto flex flex-col sm:flex-row items-center justify-center sm:justify-between px-4 md:px-8 text-zinc-500 text-xs font-poppins">
+            <p class="uppercase tracking-widest text-[10px] mb-3 sm:mb-0">
                 Fan Project &bull; Brawlhalla é uma marca da Ubisoft
             </p>
+            <a href="https://github.com/ryuzeen" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 hover:text-white transition-colors">
+                <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                <span class="font-bold tracking-wider uppercase text-[10px]">ryuzeen</span>
+            </a>
         </footer>
     </div>
 
@@ -443,7 +444,7 @@
             lendasFiltradas.forEach((lenda) => {
                 const color = classColors[lenda.classe];
                 const card = document.createElement('div');
-                card.className = `relative group aspect-square rounded-sm overflow-hidden bg-zinc-900 border border-zinc-800 ${color.borderHover} fade-in cursor-pointer transition-colors`;
+                card.className = `relative group w-20 sm:w-24 md:w-28 lg:w-32 aspect-square rounded-sm overflow-hidden bg-zinc-900 border border-zinc-800 ${color.borderHover} fade-in cursor-pointer transition-colors`;
                 card.innerHTML = `
                     <img src="${getLegendImg(lenda.nome)}" alt="${lenda.nome}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 bg-zinc-950 p-2">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 text-center">
@@ -476,19 +477,20 @@
                 card.className = "flex flex-col bg-zinc-900/50 border border-zinc-800 rounded-sm overflow-hidden hover:border-zinc-500 transition-colors fade-in";
                 
                 // Aplicamos as cores da classe nas bordas inferiores (border-b-4) e luz de fundo
+                // Ajustamos o width do traço colorido (w-[calc(100%+16px)]) para esconder perfeitamente embaixo do divisor inclinado
                 card.innerHTML = `
                     <div class="h-24 md:h-28 flex relative bg-zinc-950">
                         <div class="w-1/2 h-full flex flex-col relative" style="background: radial-gradient(circle at center, ${color1.glow} 0%, transparent 70%);">
                             <img src="${img1}" class="w-full h-full object-contain p-2" alt="${combo.l1}">
-                            <div class="h-1 w-full ${color1.bg} absolute bottom-0"></div>
+                            <div class="h-1 w-[calc(100%+16px)] ${color1.bg} absolute bottom-0 left-0"></div>
                         </div>
                         
-                        <!-- Divisor Angular Vazio (Sem o '&') -->
-                        <div class="absolute left-1/2 top-0 bottom-0 w-6 -ml-3 bg-zinc-900 border-x border-zinc-800 transform skew-x-[-15deg] z-10"></div>
+                        <!-- Divisor Angular Vazio -->
+                        <div class="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 bg-zinc-900 border-x border-zinc-800 transform skew-x-[-15deg] z-10"></div>
                         
                         <div class="w-1/2 h-full flex flex-col relative" style="background: radial-gradient(circle at center, ${color2.glow} 0%, transparent 70%);">
                             <img src="${img2}" class="w-full h-full object-contain p-2" alt="${combo.l2}">
-                            <div class="h-1 w-full ${color2.bg} absolute bottom-0"></div>
+                            <div class="h-1 w-[calc(100%+16px)] ${color2.bg} absolute bottom-0 right-0"></div>
                         </div>
                     </div>
                     <div class="p-3 md:p-4 flex-grow flex flex-col justify-center bg-zinc-900">
